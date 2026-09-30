@@ -25,3 +25,6 @@ coverage/
 
 *.log
 npm-debug.log*
+OPERATIONS.md
+PRODUCTION_READINESS.md
+UPLOADS_RECONCILIATION.md
