@@ -10,15 +10,11 @@ Start the API with `npm run dev` from `server/` and the UI with `npm run dev` fr
 
 Tests require `NODE_ENV=test` and a dedicated database name containing `test` (for example `college_mou_test`). Set `TEST_DB_HOST`, `TEST_DB_PORT`, `TEST_DB_USER`, and `TEST_DB_PASSWORD` when test credentials differ from development; the `__EMPTY__` password sentinel is only for a disposable local MySQL instance. Run `npm test` from `server/` for validation, migration, shared rate limit, and HTTP integration tests. Run `npm run lint`, `npm run build`, and `npm run test:e2e` from `client/`. Browser tests also require `E2E_ADMIN_EMAIL` and a 16+ character `E2E_ADMIN_PASSWORD`; seed that test fixture with `npm run test:e2e:seed` from `server/`.
 
-Production readiness findings and explicit blockers are tracked in [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md). Cloud deployment is out of scope for this part.
-
-Operator procedures for backup/restore, alerting, release checks, migrations, and credential rotation are in [OPERATIONS.md](OPERATIONS.md). They are preparatory runbooks and do not perform deployment.
-
-A full-stack application for managing college Memorandums of Understanding (MOUs), related projects, students, interns, documents, and dashboard activity. The system is built with a React frontend, an Express backend, and a MySQL database. The only application roles are Admin and Viewer. Public signup always creates a Viewer.
+A full-stack application for managing  Memorandums of Understanding (MOUs), related projects, students, interns, documents, and dashboard activity. The system is built with a React frontend, an Express backend, and a MySQL database. The only application roles are Admin and Viewer. Public signup always creates a Viewer.
 
 ## Project purpose
 
-This project helps colleges and departments track:
+This project helps track:
 - MOUs and their validity dates
 - Partner colleges and departments
 - Related projects and interns
@@ -314,7 +310,7 @@ Routes are guarded with authorization checks so authenticated users must have va
 - The project is designed for a local development environment and uses MySQL as the main database.
 - Uploaded storage keys are stored in the database, while file bytes are managed through `server/storage/`.
 - The React app uses route-based navigation and component-based UI composition.
-- Many pages are designed to resemble an internal college admin dashboard for MOU management.
+- Many pages are designed to resemble an internal  admin dashboard for MOU management.
 
 ## Common commands
 
@@ -346,7 +342,6 @@ npm run build
 ## Troubleshooting
 
 - If login fails, verify that the MySQL database is running and the .env credentials match the actual DB user/password.
-- If uploads fail, check the API error and storage adapter health; production uploads fail closed until a malware scanner is configured.
 - If a frontend page is blank or broken, check the browser console and confirm the backend is running on port 4000.
 - If MySQL data imports fail, check Excel/CSV headers, date formats, and required fields.
 
@@ -512,166 +507,4 @@ import_logs
   └── created_at
 ```
 
-## Screenshot section
-
-Add screenshots here once captured in a real environment:
-
-```text
-1. Dashboard
-2. MOU List
-3. Create MOU Form
-4. Documents Upload Section
-5. Project Management Page
-6. Notifications Page
-7. Profile Page
 ```
-
-Example image placeholders:
-
-- Dashboard screenshot: `docs/screenshots/dashboard.png`
-- MOU page screenshot: `docs/screenshots/mous.png`
-- Document vault screenshot: `docs/screenshots/documents.png`
-
-## Architecture diagram
-
-```text
-+------------------------------------------------------------+
-|                       Browser / User                        |
-|  React Frontend (client/)                                  |
-|  - Login page                                              |
-|  - Dashboard                                               |
-|  - MOU pages                                               |
-|  - Documents                                               |
-|  - Projects / Interns                                      |
-|  - Reports / Notifications                                  |
-+---------------------------+--------------------------------+
-                            |
-                            | HTTP / JSON / FormData
-                            v
-+------------------------------------------------------------+
-|                 Express API Server (server/)                |
-|  - Authentication (JWT)                                    |
-|  - Route handlers                                          |
-|  - Business validation                                     |
-|  - File upload handling                                     |
-|  - Excel import processing                                  |
-|  - Dashboard/report aggregation                             |
-+---------------------------+--------------------------------+
-                            |
-                            | MySQL queries
-                            v
-+------------------------------------------------------------+
-|                        MySQL Database                       |
-|  - users                                                   |
-|  - colleges                                                |
-|  - departments                                             |
-|  - mous                                                    |
-|  - students                                                |
-|  - interns                                                 |
-|  - projects                                                |
-|  - documents                                               |
-|  - import_logs                                             |
-+------------------------------------------------------------+
-```
-
-## How this app flows from login to final MOU creation
-
-```text
-1. User opens frontend
-   └─ Browser loads the app and shows login page
-
-2. User logs in
-   ├─ Frontend sends email + password to /api/auth/login
-   ├─ Backend validates credentials against MySQL users table
-   ├─ Backend creates and returns a JWT token
-   └─ Frontend stores token in local storage and redirects to dashboard
-
-3. User sees dashboard
-   ├─ React app loads dashboard widgets
-   ├─ Dashboard fetches metrics from /api/reports
-   ├─ Dashboard fetches MOU/project/intern data from relevant APIs
-   └─ User can navigate to MOU, Projects, Documents, etc.
-
-4. User creates a new MOU
-   ├─ User clicks MOU section and chooses Create MOU
-   ├─ Form collects fields such as:
-   │    - college
-   │    - department
-   │    - MOU date
-   │    - valid upto
-   │    - purpose
-   │    - activities
-   │    - students benefited
-   │    - contact person / email
-   ├─ Frontend submits payload to POST /api/mous
-   ├─ Backend validates required values and stores row in mous table
-   └─ User is redirected or shown success confirmation
-
-5. MOU is stored and can be viewed later
-   ├─ MOU list reads records from /api/mous
-   ├─ User can open MOU details page
-   ├─ MOU details may show linked projects, interns, and documents
-   └─ PDF report can be generated for the selected MOU
-
-6. User may attach documents
-   ├─ On the Documents page or MOU detail page, user selects a file
-   ├─ Backend validates supported file type and size
-   ├─ Document metadata is saved in documents table
-   ├─ File is written through the server storage adapter
-   └─ Document is linked to chosen MOU
-
-7. Dashboard updates with live data
-   ├─ Metrics are refreshed from database
-   ├─ MOU status distribution is recalculated based on real date data
-   ├─ Recent activity reflects MOU/project/intern events
-   └─ Notifications can reflect deadline/expiry/start conditions
-
-8. Final use case
-   └─ The college admin can manage the lifecycle of MOUs from creation to activity tracking to document storage and reporting
-```
-
-## Deployment notes
-
-This project is structured for a local development environment but can be adapted to deployment in production.
-
-### Local deployment
-- Run the MySQL database on a local or managed server.
-- Update .env values with the production DB credentials.
-- Start frontend with Vite and backend with Node.
-
-### Production considerations
-- Use a production-grade hosting provider for frontend and backend.
-- Move file uploads to cloud storage such as S3-compatible storage instead of local server storage.
-- Secure secrets via environment variables or platform secrets manager.
-- Set up SSL/TLS and reverse proxy configuration.
-- Add automated backups for MySQL.
-- Restrict database user permissions to the minimum needed.
-- Configure explicit allowed origins, shared rate limits, malware scanning, reviewed migrations, and monitoring before public deployment.
-
-### Example deployment architecture
-
-```text
-Browser
-  ↓
-Frontend (Vite / static hosting or Node SSR host)
-  ↓
-Express API (Node.js)
-  ↓
-MySQL Database
-  ↓
-File Storage (Local uploads in dev, S3-compatible in prod)
-```
-
-## Future enhancement ideas
-
-- Add dedicated document verification workflow with role-based approval
-- Add full document search and filter panel across all MOUs
-- Add PDF preview in-browser with secure file access
-- Add version history and audit trail UI for every document change
-- Add export of all document data to spreadsheet/report formats
-- Add automation for renewal reminder emails and notifications
-- Add user management for the Admin and Viewer roles
-
-## License
-
-This project is intended for internal college administration use and is not currently published as a public package. License terms may depend on your institutional or organization requirements.
